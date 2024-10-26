@@ -14,11 +14,11 @@ T MessageQueue<T>::receive()
     // to wait for and receive new messages and pull them from the queue using move semantics. 
     // The received object should then be returned by the receive function. 
     std::unique_lock<std::mutex> uLock(_mutex);
-    _condition.wait(uLock, [this] { return !_messages.empty(); }); // pass unique lock to condition variable
+    _condition.wait(uLock, [this] { return !_queue.empty(); }); // pass unique lock to condition variable
 
     // remove last vector element from queue
-    T msg = std::move(_messages.back());
-    _messages.pop_back();
+    T msg = std::move(_queue.back());
+    _queue.pop_back();
 
     return msg; // will not be copied due to return value optimization (RVO) in C++
 }
@@ -37,7 +37,7 @@ void MessageQueue<T>::send(T &&msg)
 
     // add vector to queue
     std::cout << "   Message " << msg << " has been sent to the queue" << std::endl;
-    _messages.push_back(std::move(msg));
+    _queue.push_back(std::move(msg));
     _condition.notify_one(); // notify client after pushing new Vehicle into vector
 }
 
